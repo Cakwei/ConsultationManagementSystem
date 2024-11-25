@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="oopassignmentremake:jar">
+    <output-path>$USER_HOME$/Downloads</output-path>
+    <root id="archive" name="oopassignmentremake.jar">
+      <element id="module-output" name="oopassignmentremake" />
+    </root>
+  </artifact>
+</component>
