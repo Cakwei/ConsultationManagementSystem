@@ -143,7 +143,7 @@ public class HomepageViewLecturer extends JPanel {
                 String id = model.getValueAt(row, 0).toString();
                 ConsultationStatus status = ConsultationStatus.valueOf(model.getValueAt(row, 4).toString());
                 if (status.equals(ConsultationStatus.SCHEDULED)) {
-                    int result = JOptionPane.showConfirmDialog(null, "Are you sure to end this consultation early?", "Early consultation completion process", JOptionPane.YES_NO_OPTION);
+                    int result = JOptionPane.showConfirmDialog(null, "Are you sure to end this consultation?", "Early consultation completion process", JOptionPane.YES_NO_OPTION);
                     if (result == JOptionPane.YES_OPTION) {
                         new ConsultationManagement().updateConsultationInFile(id, ConsultationStatus.COMPLETED);
                         JOptionPane.showMessageDialog(null, "This consultation is declared complete", "Operation success", JOptionPane.INFORMATION_MESSAGE);
