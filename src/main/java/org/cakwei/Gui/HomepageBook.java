@@ -67,6 +67,7 @@ public class HomepageBook extends javax.swing.JPanel {
         return dict;
     }
     public HomepageBook() {
+        new ConsultationManagement().checkConsultationHasPassed();
         initComponents();
         homepageBookTable.setDefaultRenderer(Object.class, new TableCellRender());
         TableActionEventHomepageBook event = new TableActionEventHomepageBook() {
@@ -229,12 +230,10 @@ public class HomepageBook extends javax.swing.JPanel {
     private void submitActionPerformed(java.awt.event.ActionEvent evt) {                                                            
         DefaultTableModel model = (DefaultTableModel) homepageBookTable.getModel();
         model.addRow(new Object[]{"1", "2", "3"});
-    }                                      
-
+    }
     private void searchBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBtnActionPerformed
         DefaultTableModel model = (DefaultTableModel) homepageBookTable.getModel();
         model.getDataVector().removeAllElements();
-        model.fireTableDataChanged();
         String input = searchBar.getText().toLowerCase(); //read from user file
         Map<String, Integer> list = filter();
         for (Map.Entry<String, Integer> entry : list.entrySet()) {
@@ -243,6 +242,7 @@ public class HomepageBook extends javax.swing.JPanel {
                 model.addRow(new String[] {entry.getKey(), String.valueOf(entry.getValue())});
             }
         }
+        model.fireTableDataChanged();
     }//GEN-LAST:event_searchBtnActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

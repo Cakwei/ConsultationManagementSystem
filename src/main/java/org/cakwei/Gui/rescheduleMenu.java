@@ -1,13 +1,8 @@
 
 package org.cakwei.Gui;
-
-import com.github.lgooddatepicker.components.DatePickerSettings;
-import com.github.lgooddatepicker.components.DateTimePicker;
 import org.cakwei.ConsultationManagement;
 import org.cakwei.ConsultationStatus;
-
 import javax.swing.*;
-import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -15,6 +10,7 @@ import static org.cakwei.Gui.Homepage.HomepageGui;
 
 public class rescheduleMenu extends javax.swing.JFrame {
     public rescheduleMenu() {
+        new ConsultationManagement().checkConsultationHasPassed();
         initComponents();
     }
     @SuppressWarnings("unchecked")
@@ -107,7 +103,7 @@ public class rescheduleMenu extends javax.swing.JFrame {
                 .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(25, 25, 25)
                 .addComponent(submitBtn)
-                .addGap(25, 25, 25))
+                .addGap(50, 50, 50))
         );
 
         pack();

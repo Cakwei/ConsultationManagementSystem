@@ -55,7 +55,7 @@ public class ActionsPanelHomepageViewLecturer extends JPanel {
         giveFeedbackBtn.setText("Give a feedback");
         giveFeedbackBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
-        approveCancelReschedulingBtn.setText("Approval/Cancel Rescheduling");
+        approveCancelReschedulingBtn.setText("Approve/Cancel Rescheduling");
         approveCancelReschedulingBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
         cancelScheduleBtn.setText("Cancel Schedule");
@@ -75,13 +75,13 @@ public class ActionsPanelHomepageViewLecturer extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(83, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(giveFeedbackBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(approveCancelReschedulingBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cancelScheduleBtn)
-                .addContainerGap(83, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(viewFeedbackBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)

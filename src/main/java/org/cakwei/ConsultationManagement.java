@@ -1,14 +1,13 @@
 package org.cakwei;
 import java.io.*;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static org.cakwei.Application.currentSession;
-
-
-public class ConsultationManagement extends FileManagement { // Soon become abstract class
+public class ConsultationManagement extends FileManagement {
     private BufferedWriter writer;
+
     public Consultation findConsultationById(String id) {
         List<Consultation> consultations = readConsultation();
         for (Consultation consultation : consultations) {
@@ -18,17 +17,23 @@ public class ConsultationManagement extends FileManagement { // Soon become abst
         }
         return null;
     }
-    public void start() {
-        boolean isRequiredFilesExist = new File(consultationFile).exists() && new File(transactionFile).exists();
-        if (!isRequiredFilesExist) {
-            System.out.println("[!] One or more is not present, creating required files.");
-            createInitialFile();
-        }
-    }
 
-    public static void main(String[] args) {
-        ConsultationManagement inv = new ConsultationManagement();
-        inv.start();
+    public void checkConsultationHasPassed() {
+        List<Consultation> consultations = readConsultation();
+        for (Consultation consultation : consultations) {
+            boolean isScheduledPassedTime = consultation.getStatus().equals(ConsultationStatus.SCHEDULED) && consultation.getEndDate().isBefore(LocalDateTime.now());
+            //System.out.println("First " + isScheduledPassedTime + consultation.getEndDate() + " " + LocalDateTime.now());
+            if (isScheduledPassedTime) {
+                updateConsultationInFile(consultation.getConsultationId(), ConsultationStatus.COMPLETED);
+            }
+
+            boolean isOpenOrRescheduledPastTime = (consultation.getStatus().equals(ConsultationStatus.OPEN) || consultation.getStatus().equals(ConsultationStatus.RESCHEDULED)) && consultation.getEndDate().isBefore(LocalDateTime.now());
+            //System.out.println("Second " + isOpenOrRescheduledPastTime + consultation.getEndDate() + " " + LocalDateTime.now());
+            if (isOpenOrRescheduledPastTime) {
+                updateConsultationInFile(consultation.getConsultationId(), ConsultationStatus.CANCELLED);
+
+            }
+        }
     }
 
     public List<Consultation> readConsultation() {
@@ -53,16 +58,16 @@ public class ConsultationManagement extends FileManagement { // Soon become abst
 
     protected void createInitialFile() {
         writeFile(consultationFile, Arrays.asList(
-                "CONSULT_ID::STUDENT NAME::LECTURER NAME::START TIME::END TIME::SFEEDBACK::LFEEDBACK::STATUS::NOTIFY USER OF APPROVAL",
-                "1::::4::2024-11-01T01:00::2024-11-01T01:30::::::OPEN::false",
-                "2::::4::2024-11-02T02:00::2024-11-02T02:30::::::SCHEDULED::false",
-                "3::2::5::2024-11-03T03:00::2024-11-03T03:30::::::COMPLETED::false",
-                "4::::5::2024-11-04T04:00::2024-11-04T04:30::::::RESCHEDULED::false",
-                "5::2::4::2024-11-05T05:00::2024-11-05T05:30::::::COMPLETED::false",
-                "6::::4::2024-11-06T06:00::2024-11-06T06:30::::Nut::OPEN::false",
-                "7::::4::2024-11-07T07:00::2024-11-07T07:30::::::OPEN::false",
-                "8::::4::2024-11-08T08:00::2024-11-08T08:30::::::OPEN::false",
-                "9::2::4::2024-11-09T01:00::2024-11-09T09:30::::::SCHEDULED::false")
+                "CONSULT_ID::STUDENT ID::LECTURER ID::START TIME::END TIME::SFEEDBACK::LFEEDBACK::STATUS::NOTIFY USER OF APPROVAL",
+                "1::::1::2024-11-01T01:00::2024-11-01T01:30::::::OPEN::false",
+                "2::2::1::2024-11-02T02:00::2024-11-02T02:30::Great lecturer::Great student::COMPLETED::false",
+                "3::2::1::2024-11-03T03:00::2024-11-03T03:30::::::COMPLETED::false",
+                "4::2::1::2024-11-04T04:00::2024-11-04T04:30::::::RESCHEDULED::false",
+                "5::2::1::2024-11-05T05:00::2024-11-05T05:30::::::COMPLETED::false",
+                "6::::1::2025-11-06T06:30::2025-11-06T08:30::::::OPEN::false",
+                "7::::1::2025-11-07T07:00::2025-11-07T07:30::::::OPEN::false",
+                "8::::1::2025-11-08T08:00::2025-11-08T08:30::::::OPEN::false",
+                "9::2::1::2024-11-09T09:00::2024-11-09T09:30::::::SCHEDULED::false")
         );
     }
 
@@ -77,90 +82,78 @@ public class ConsultationManagement extends FileManagement { // Soon become abst
             System.out.println("[!] Error occurred while creating the file:");
         }
     }
+
     public void updateConsultationInFile(String consultId, ConsultationStatus newStatus, LocalDateTime startDate, int durationInMinutes) {
-        updateConsultationInFile(consultId, "",newStatus, startDate, durationInMinutes, "", "", false);
+        updateConsultationInFile(consultId, "", newStatus, startDate, durationInMinutes, "", "", false);
     }
+
     public void updateConsultationInFile(String consultId, ConsultationStatus newStatus, LocalDateTime startDate, int durationInMinutes, String studentFeedbackMessage, String lecturerFeedbackMessage) {
-        updateConsultationInFile(consultId,"", newStatus, startDate, durationInMinutes, studentFeedbackMessage, lecturerFeedbackMessage, false);
+        updateConsultationInFile(consultId, "", newStatus, startDate, durationInMinutes, studentFeedbackMessage, lecturerFeedbackMessage, false);
     }
+
     public void updateConsultationInFile(String consultId, ConsultationStatus newStatus) {
         updateConsultationInFile(consultId, "", newStatus, null, 0, "", "", false);
         //updateConsultationInFile(findConsultationId(lecturerId.getId(), convertToLocalDateTime), ConsultationStatus.SCHEDULED, null, 0, "", "")
     }
-    public void updateConsultationInFile(String consultId, String userId, ConsultationStatus newStatus, LocalDateTime startDate, int durationInMinutes, String studentFeedbackMessage, String lecturerFeedbackMessage,  boolean notifyStudentOfApproval) { //MAIN METHOD
-        Consultation updatedConsultation = null;
-        String newLine = "";
-        try {
-            Scanner scanner = new Scanner(new File(consultationFile));
-            StringBuffer buffer = new StringBuffer();
-            while (scanner.hasNextLine()) {
-                buffer.append(scanner.nextLine() + System.lineSeparator());
-            }
-            String fileContents = buffer.toString();
-            scanner.close();
-            List<Consultation> consultations = readConsultation();
-            for (Consultation consultation : consultations) {
-                if (consultation.getConsultationId().equals(consultId)) {
-                    updatedConsultation = consultation;
-                    break;
-                }
-            }
-            String oldLine = consultations.indexOf(updatedConsultation) + 1 + "::" +
-                    updatedConsultation.getStudentId() + "::" +
-                    updatedConsultation.getLecturerId() + "::" +
-                    updatedConsultation.getStartDate() + "::" +
-                    updatedConsultation.getEndDate() + "::" +
-                    updatedConsultation.getStudentFeedback() + "::" +
-                    updatedConsultation.getLecturerFeedback() + "::" +
-                    updatedConsultation.getStatus() + "::" +
-                    updatedConsultation.getNotifyUserOfApproval();
 
-            if (newStatus.equals(ConsultationStatus.SCHEDULED)) { //FROM RESCHEDULE & OPEN TO SCHEDULED
-                newLine = (consultations.indexOf(updatedConsultation) + 1) + "::" +
-                    (userId.isBlank() ?  updatedConsultation.getStudentId() : userId) + "::" +
-                    updatedConsultation.getLecturerId() + "::" +
-                    updatedConsultation.getStartDate() + "::" +
-                    updatedConsultation.getEndDate() + "::" +
-                    updatedConsultation.getLecturerFeedback() + "::" +
-                    updatedConsultation.getStudentFeedback() + "::" +
-                    newStatus +
-                    (notifyStudentOfApproval ? "::true" : "::false");
-            } else if (newStatus.equals(ConsultationStatus.RESCHEDULED)) { //SCHEDULED TO RESCHEDULED
-                 newLine = (consultations.indexOf(updatedConsultation) + 1) + "::" +
-                    updatedConsultation.getStudentId() + "::" +
-                    updatedConsultation.getLecturerId() + "::" +
-                    startDate + "::" +
-                    startDate.plusMinutes(durationInMinutes) + "::::::" +
-                    newStatus + "::false";
-            } else if (newStatus.equals(ConsultationStatus.CANCELLED)) {
-                newLine = (consultations.indexOf(updatedConsultation) + 1) + "::" +
-                        (userId.isBlank() ?  updatedConsultation.getStudentId() : userId) + "::" +
-                        updatedConsultation.getLecturerId() + "::" +
-                        updatedConsultation.getStartDate() + "::" +
-                        updatedConsultation.getEndDate() + "::::::" +
-                        newStatus + "::true";
-            } else {
-                System.out.println("wpfjweifjwefgjwogfjw;ogj" +updatedConsultation.getStudentFeedback().isBlank() + updatedConsultation.getLecturerFeedback().isBlank());
-                newLine = (consultations.indexOf(updatedConsultation) + 1) + "::" + //COMPLETED
-                        updatedConsultation.getStudentId() + "::" +
-                        updatedConsultation.getLecturerId() + "::" +
-                        updatedConsultation.getStartDate() + "::" +
-                        updatedConsultation.getEndDate() + "::" + (!updatedConsultation.getStudentFeedback().isBlank() ?  updatedConsultation.getStudentFeedback() : studentFeedbackMessage) + "::" +
-                        (!updatedConsultation.getLecturerFeedback().isBlank() ?  updatedConsultation.getLecturerFeedback() : lecturerFeedbackMessage)+ "::" +
-                        newStatus + "::false";
-            }
-            System.out.println(oldLine + "\n" + newLine);
-            fileContents = fileContents.replaceAll(oldLine, newLine);
-            FileWriter writer = new FileWriter(consultationFile);
-            //System.out.println("New data: " + fileContents);
-            writer.append(fileContents);
-            writer.flush();
-            writer.close();
+    public void updateConsultationInFile(String consultId, String userId, ConsultationStatus newStatus, LocalDateTime startDate, int durationInMinutes, String studentFeedbackMessage, String lecturerFeedbackMessage, boolean notifyStudentOfApproval) {
+        try {
+            Consultation consultationToUpdate = findConsultationById(consultId);
+            String oldLine = consultationToUpdate.convert();
+
+            Consultation updatedConsultation = createUpdatedConsultation(
+                    consultationToUpdate, userId, newStatus, startDate, durationInMinutes, studentFeedbackMessage, lecturerFeedbackMessage, notifyStudentOfApproval
+            );
+            String newLine = updatedConsultation.convert();
+            updateFileContents(oldLine, newLine);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+    private Consultation createUpdatedConsultation(Consultation consultation, String userId, ConsultationStatus newStatus, LocalDateTime startDate, int durationInMinutes, String studentFeedbackMessage, String lecturerFeedbackMessage, boolean notifyStudentOfApproval) {
+        switch (newStatus) {
+            case SCHEDULED:
+                consultation.setStudentId(userId.isBlank() ?  consultation.getStudentId() : userId);
+                //System.out.println("MAET" + consultation.convert() + "WHAT: " + userId);
+                consultation.setNotifyUserOfApproval(notifyStudentOfApproval);
+                break;
 
+            case RESCHEDULED:
+                consultation.setStartDate(startDate);
+                consultation.setEndDate(startDate.plusMinutes(durationInMinutes));
+                consultation.setNotifyUserOfApproval(false);
+                break;
+
+            case CANCELLED:
+                consultation.setStudentId(userId.isBlank() ? consultation.getStudentId() : userId);
+                consultation.setNotifyUserOfApproval(true);
+                break;
+
+            case COMPLETED:
+                consultation.setStudentFeedback(
+                        !consultation.getStudentFeedback().isBlank() ? consultation.getStudentFeedback() : studentFeedbackMessage
+                );
+                consultation.setLecturerFeedback(
+                        !consultation.getLecturerFeedback().isBlank() ? consultation.getLecturerFeedback() : lecturerFeedbackMessage
+                );
+                consultation.setNotifyUserOfApproval(false);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported status: " + newStatus);
+        }
+
+        consultation.setStatus(newStatus);
+        System.out.println("OUT: " + consultation.convert());
+        return consultation;
+    }
+
+    private void updateFileContents(String oldLine, String newLine) throws IOException {
+        File file = new File(consultationFile);
+        String fileContents = Files.readString(file.toPath());
+        fileContents = fileContents.replace(oldLine, newLine);
+        Files.writeString(file.toPath(), fileContents);
+    }
     public void addConsultationToFile(Consultation consultation) {
         try {
             writer = new BufferedWriter(new FileWriter(consultationFile, true));

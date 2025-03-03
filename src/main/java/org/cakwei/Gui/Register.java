@@ -4,18 +4,14 @@
  */
 package org.cakwei.Gui;
 import com.formdev.flatlaf.FlatDarkLaf;
-import org.cakwei.AccountManagement;
-import org.cakwei.Application;
+import org.cakwei.ConsultationManagement;
 import org.cakwei.userTypes;
-
 import javax.swing.*;
-
-import java.awt.*;
-
 import static org.cakwei.Application.currentSession;
 
 public class Register extends JFrame {
     public Register() {
+        new ConsultationManagement().checkConsultationHasPassed();
         initComponents();
     }
     @SuppressWarnings("unchecked")
@@ -33,6 +29,7 @@ public class Register extends JFrame {
         studentComboBox = new javax.swing.JRadioButton();
         lecturerComboBox = new javax.swing.JRadioButton();
         jLabel2 = new javax.swing.JLabel();
+        jCheckBox1 = new javax.swing.JCheckBox();
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         switchLoginBtn3 = new javax.swing.JButton();
@@ -52,6 +49,7 @@ public class Register extends JFrame {
         usernameLabel.setText("Username:");
 
         usernameTextField.setBackground(new java.awt.Color(255, 255, 255));
+        usernameTextField.setForeground(new java.awt.Color(0, 0, 0));
         usernameTextField.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
         usernameTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -60,6 +58,7 @@ public class Register extends JFrame {
         });
 
         passwordTextField.setBackground(new java.awt.Color(255, 255, 255));
+        passwordTextField.setForeground(new java.awt.Color(0, 0, 0));
         passwordTextField.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
         passwordTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -85,12 +84,23 @@ public class Register extends JFrame {
         rightHeaderLabel.setText("REGISTER");
 
         buttonGroup1.add(studentComboBox);
+        studentComboBox.setForeground(new java.awt.Color(0, 0, 0));
         studentComboBox.setText("Student");
 
         buttonGroup1.add(lecturerComboBox);
+        lecturerComboBox.setForeground(new java.awt.Color(0, 0, 0));
         lecturerComboBox.setText("Lecturer");
 
+        jLabel2.setForeground(new java.awt.Color(0, 0, 0));
         jLabel2.setText("Register as:");
+
+        jCheckBox1.setForeground(new java.awt.Color(0, 0, 0));
+        jCheckBox1.setText("Show password");
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -100,6 +110,9 @@ public class Register extends JFrame {
                 .addGap(75, 75, 75)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(passwordLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(rightHeaderLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
                             .addComponent(passwordTextField)
@@ -107,11 +120,11 @@ public class Register extends JFrame {
                             .addComponent(usernameTextField, javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
                                 .addComponent(usernameLabel)
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addGap(75, 75, 75))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(passwordLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jCheckBox1)))
+                        .addGap(75, 75, 75))))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel2)
@@ -124,7 +137,7 @@ public class Register extends JFrame {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap(116, Short.MAX_VALUE)
+                .addContainerGap(108, Short.MAX_VALUE)
                 .addComponent(rightHeaderLabel)
                 .addGap(35, 35, 35)
                 .addComponent(usernameLabel)
@@ -139,9 +152,11 @@ public class Register extends JFrame {
                     .addComponent(studentComboBox)
                     .addComponent(lecturerComboBox)
                     .addComponent(jLabel2))
-                .addGap(28, 28, 28)
+                .addGap(15, 15, 15)
+                .addComponent(jCheckBox1)
+                .addGap(22, 22, 22)
                 .addComponent(registerButton)
-                .addContainerGap(117, Short.MAX_VALUE))
+                .addContainerGap(93, Short.MAX_VALUE))
         );
 
         jPanel4.setBackground(new java.awt.Color(153, 255, 153));
@@ -228,18 +243,21 @@ public class Register extends JFrame {
         if (lecturerComboBox.isSelected()) {
             role = userTypes.LECTURER;
         }
-        if (role == null) {
+        if (username.isBlank() || password.isBlank() || role == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Please enter all fields",
+                    "Error occurred",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (!currentSession.signUp(username, password, role)) {
             usernameTextField.setText("");
             passwordTextField.setText("");
-            JOptionPane.showMessageDialog(this,
-                    "PLease follow the requirements: " + new AccountManagement().displayRequirements(),
-                    "Error occurred when registering",
-                    JOptionPane.ERROR_MESSAGE);
         } else {
-            System.out.println("Continuing to homepage from register");
+            JOptionPane.showMessageDialog(this,
+                    "You have successfully created an account.",
+                    "Registration successful",
+                    JOptionPane.INFORMATION_MESSAGE);
             this.dispose();
             new Login().setVisible(true);
         }
@@ -250,6 +268,14 @@ public class Register extends JFrame {
         login.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_switchLoginBtn3ActionPerformed
+
+    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+          if (jCheckBox1.isSelected()) {
+            passwordTextField.setEchoChar((char)0);
+        } else {
+            passwordTextField.setEchoChar('\u2022');
+        }
+    }//GEN-LAST:event_jCheckBox1ActionPerformed
     public static void main(String[] args) {
         FlatDarkLaf.setup();
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -261,6 +287,7 @@ public class Register extends JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;

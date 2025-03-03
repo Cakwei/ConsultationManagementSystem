@@ -10,11 +10,12 @@ public class Application extends AccountManagement{
             boolean isUserFileExist = new File(userFile).exists();
             boolean isConsultationFileExist = new File(consultationFile).exists();
             if (!isUserFileExist) {
-                new AccountManagement().createInitialFile();
+                currentSession.createInitialFile();
             }
             if (!isConsultationFileExist) {
-                new ConsultationManagement().createInitialFile();
+                currentSession.createInitialFile();
             }
+            new ConsultationManagement().checkConsultationHasPassed();
             FlatDarkLaf.setup();
             Login.main(args);
     }

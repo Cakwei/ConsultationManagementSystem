@@ -9,12 +9,8 @@ import org.cakwei.ConsultationManagement;
 import org.cakwei.ConsultationStatus;
 
 import javax.swing.*;
-import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.cakwei.Application.currentSession;
@@ -22,6 +18,7 @@ import static org.cakwei.Gui.HomepageLecturer.HomepageLecturerGui;
 
 public class CreateConsultation extends javax.swing.JPanel {
     public CreateConsultation() {
+        new ConsultationManagement().checkConsultationHasPassed();
         initComponents();
     }
     @SuppressWarnings("unchecked")
@@ -39,6 +36,8 @@ public class CreateConsultation extends javax.swing.JPanel {
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "30 Minutes", "1 Hour", "1.5 Hours", "2 Hours" }));
+        jComboBox1.setBackground(new java.awt.Color(255, 255, 255));
+        jComboBox1.setForeground(new java.awt.Color(0, 0, 0));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox1ActionPerformed(evt);
@@ -119,32 +118,6 @@ public class CreateConsultation extends javax.swing.JPanel {
         return !(!toCheck.isBefore(startInterval) && !toCheck.isAfter(endInterval));
     }
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        /*String date = dateTimePicker1.getDatePicker().getDateStringOrEmptyString();
-        String time = dateTimePicker1.getTimePicker().getTimeStringOrEmptyString();
-        String dateTime = date + " " + time;
-
-        int index = jComboBox1.getSelectedIndex();
-        int[] duration = {30, 60, 90, 120};
-        boolean isTimeAvailable = true;
-        System.out.println(date.isBlank() + " " + dateTimePicker1.getTimePicker().getTimeStringOrEmptyString().isBlank());
-        if (!(date.isBlank() || dateTimePicker1.getTimePicker().getTimeStringOrEmptyString().isBlank() /*|| !(index >= 0 && index < duration.length))) {
-            List<Consultation> consultations = new ConsultationManagement().readConsultation();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            LocalDateTime convertedStartDate = LocalDateTime.parse(dateTime, formatter);
-            for (Consultation consultation : consultations) {
-                System.out.println("CHECK 1: " + consultation.getStatus().equals(ConsultationStatus.SCHEDULED) + " " + consultation.getStatus().equals(ConsultationStatus.RESCHEDULED) + " " + consultation.getStatus().equals(ConsultationStatus.OPEN) + consultation.getLecturerId().equalsIgnoreCase(currentSession.currentUserId));
-                if ((consultation.getStatus().equals(ConsultationStatus.SCHEDULED) || consultation.getStatus().equals(ConsultationStatus.OPEN) || consultation.getStatus().equals(ConsultationStatus.RESCHEDULED)) && consultation.getLecturerId().equalsIgnoreCase(currentSession.currentUserId)) {
-                    isTimeAvailable = within(convertedStartDate, consultation.getStartDate(), consultation.getEndDate());
-                    System.out.println("BOOLEAN CHECK: " + isTimeAvailable);
-                }
-            }
-
-            if (isTimeAvailable) {
-                new ConsultationManagement().addConsultationToFile(new Consultation(String.valueOf(consultations.size() + 1), "", currentSession.currentUserId, convertedStartDate, convertedStartDate.plusMinutes(duration[index]), "", "", ConsultationStatus.OPEN, false));
-                JOptionPane.showMessageDialog(null, "Consultation has been created and students can book for this appointment.", "Creation success", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(null, "s", "s", JOptionPane.ERROR_MESSAGE);
-            }*/
         String date = dateTimePicker1.getDatePicker().getDateStringOrEmptyString();
         String time = dateTimePicker1.getTimePicker().getTimeStringOrEmptyString();
         String dateTime = date + " " + time;

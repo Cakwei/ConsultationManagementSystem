@@ -6,7 +6,7 @@ import java.util.Comparator;
 
 public class Consultation {
     private String studentId;
-    private String consultationId;
+    private final String consultationId;
     private String lecturerId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
@@ -31,6 +31,9 @@ public class Consultation {
     public LocalDateTime getStartDate() {
         return startDate;
     }
+    public void setStartDate(LocalDateTime DateTime) {
+        this.startDate = DateTime;
+    }
 
     public String convert() {
         return String.join("::", consultationId, studentId, lecturerId, startDate.toString(), endDate.toString(), studentFeedback, lecturerFeedback, status.toString(), Boolean.toString(notifyUserOfApproval));
@@ -42,6 +45,9 @@ public class Consultation {
 
     public ConsultationStatus getStatus() {
         return status;
+    }
+    public void setStatus(ConsultationStatus status) {
+        this.status = status;
     }
 
     public static Comparator<String> StuNameComparator = new Comparator<String>() {
@@ -64,7 +70,9 @@ public class Consultation {
     public String getStudentId() {
         return (studentId == null) ? "" : studentId;
     }
-
+    public void setStudentId(String id) {
+        this.studentId = id;
+    }
     public String getConsultationId() {
         return consultationId;
     }
@@ -72,17 +80,25 @@ public class Consultation {
     public LocalDateTime getEndDate() {
         return endDate;
     }
-
+    public void setEndDate(LocalDateTime DateTime) {
+        this.endDate = DateTime;
+    }
     public String getStudentFeedback() {
         return studentFeedback;
     }
-
-    public String getLecturerFeedback() {
+    public void setStudentFeedback(String message) {
+        this.studentFeedback = message;
+    } public String getLecturerFeedback() {
         return lecturerFeedback;
     }
-
+    public void setLecturerFeedback(String message) {
+        this.lecturerFeedback =  message;
+    }
     public boolean getNotifyUserOfApproval() {
         return notifyUserOfApproval;
+    }
+    public void setNotifyUserOfApproval(boolean Boolean) {
+        this.notifyUserOfApproval = Boolean;
     }
 }
 

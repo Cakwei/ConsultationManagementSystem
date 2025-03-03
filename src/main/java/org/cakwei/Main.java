@@ -10,6 +10,6 @@ public class Main {
     }
     public static void main(String[] args) {
         System.out.println("[!] Starting up application...");
-        Application.main(args);   // Won't allow username change since it's not required, bcz it's an inventory management sys
+        Application.main(args);
     }
 }

@@ -1,9 +1,5 @@
 ID::USERNAME::PASSWORD::USERTYPE
-1::admin::a::LECTURER
-2::cakwei::c::STUDENT
-3::poop::Poop1::STUDENT
-4::Dr. Sum Ting Wong::a::LECTURER
-5::Dr. He Kohn Nao::a::LECTURER
-6::cakwei2::Cakwei2::STUDENT
-7::cakwei3::Cakwei3::LECTURER
-8::lec::l::LECTURER
+1::lec1::l::LECTURER
+2::lec2::l::LECTURER
+3::cakwei::c::STUDENT
+4::cys::Aa1::STUDENT

@@ -1,12 +1,11 @@
 package org.cakwei.Gui;
 import com.formdev.flatlaf.FlatDarkLaf;
-import org.cakwei.Account;
-
-import static org.cakwei.Application.currentSession;
+import org.cakwei.ConsultationManagement;
 
 public class HomepageLecturer extends javax.swing.JFrame {
     public static final HomepageLecturer HomepageLecturerGui = new HomepageLecturer();
     public HomepageLecturer() {
+        new ConsultationManagement().checkConsultationHasPassed();
         initComponents();
         body.removeAll();
         body.add(new CreateConsultation());
@@ -27,7 +26,6 @@ public class HomepageLecturer extends javax.swing.JFrame {
         body = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setResizable(false);
 
         jPanel3.setLayout(new java.awt.BorderLayout());
 

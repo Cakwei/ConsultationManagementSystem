@@ -1,8 +1,11 @@
 package org.cakwei.Gui;
 
+import org.cakwei.ConsultationManagement;
+
 public class viewFeedback extends javax.swing.JFrame {
 
     public viewFeedback() {
+        new ConsultationManagement().checkConsultationHasPassed();
         initComponents();
     }
     @SuppressWarnings("unchecked")

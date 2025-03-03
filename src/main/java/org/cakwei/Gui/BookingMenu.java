@@ -8,14 +8,12 @@ import org.cakwei.Account;
 import org.cakwei.Consultation;
 import org.cakwei.ConsultationManagement;
 import org.cakwei.ConsultationStatus;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
-
-import static java.util.Collections.sort;
 import static org.cakwei.Application.currentSession;
 import static org.cakwei.Gui.Homepage.HomepageGui;
 import static org.cakwei.Gui.HomepageBook.homepageBookTable;
@@ -30,16 +28,21 @@ public class BookingMenu extends javax.swing.JFrame {
         ConsultationManagement s = new ConsultationManagement();
         List<Consultation> x = s.readConsultation();
         List<String> list = new ArrayList<>();
+        String[] time = {"30 Minutes", "1 Hour", "1.5 Hours", "2 Hours"};
+        List<Long> timeInMinutes = Arrays.asList(30L, 60L, 90L, 120L);
         for (Consultation consultation : x) {
             if (consultation.getStatus().equals(ConsultationStatus.OPEN) && consultation.getLecturerId().equalsIgnoreCase(id)) {
-                list.add(consultation.getStartDate().toString());
+                list.add(consultation.getStartDate().toString() + " " + consultation.getEndDate().toString());
             }
         }
         Collections.sort(list);
         for (int i = 0; i < list.size(); i++) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-            LocalDateTime dateTime = LocalDateTime.parse(list.get(i), formatter);
-            list.set(i, String.format("[%s] ", dateTime.getDayOfWeek()) + dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")));
+            LocalDateTime startDateTime = LocalDateTime.parse(list.get(i).split(" ")[0], formatter);
+            LocalDateTime endDateTime = LocalDateTime.parse(list.get(i).split(" ")[1], formatter);
+            long duration = ChronoUnit.MINUTES.between(startDateTime, endDateTime);
+            System.out.println(list + " " + duration + " wefipjwefiowejfiopwjf");
+            list.set(i, String.format("[%s | %s] ", startDateTime.getDayOfWeek(), time[timeInMinutes.indexOf(duration)]) + startDateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")));
         }
         list.addFirst("Please select a date");
         return list.toArray(new String[0]);
@@ -47,7 +50,6 @@ public class BookingMenu extends javax.swing.JFrame {
     private String findConsultationId(String lecturerId, LocalDateTime date) {
         ConsultationManagement s = new ConsultationManagement();
         java.util.List<Consultation> consultations = s.readConsultation();
-        System.out.println(lecturerId + " " + date);
         for (Consultation consultation : consultations) {
             if (consultation.getStatus().equals(ConsultationStatus.OPEN) && consultation.getLecturerId().equalsIgnoreCase(lecturerId) && consultation.getStartDate().equals(date)) {
                 return consultation.getConsultationId();
@@ -56,6 +58,7 @@ public class BookingMenu extends javax.swing.JFrame {
         return null;
     }
     public BookingMenu() {
+        new ConsultationManagement().checkConsultationHasPassed();
         initComponents();
     }
     @SuppressWarnings("unchecked")
@@ -100,7 +103,7 @@ public class BookingMenu extends javax.swing.JFrame {
                         .addGap(5, 5, 5))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(25, 25, 25)
-                        .addComponent(submitBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)))
+                        .addComponent(submitBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)))
                 .addGap(25, 25, 25))
             .addComponent(lecturerHeaderName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );

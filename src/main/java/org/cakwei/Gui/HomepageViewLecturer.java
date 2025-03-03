@@ -75,6 +75,7 @@ public class HomepageViewLecturer extends JPanel {
             return filteredList;
     }
     public HomepageViewLecturer() {
+        new ConsultationManagement().checkConsultationHasPassed();
         initComponents();
         HomepageViewLecturerTable.setDefaultRenderer(Object.class, new TableCellRender());
         TableActionEventHomepageViewLecturer event = new TableActionEventHomepageViewLecturer() {
@@ -83,17 +84,17 @@ public class HomepageViewLecturer extends JPanel {
                 DefaultTableModel model = (DefaultTableModel) HomepageViewLecturerTable.getModel();
                 ConsultationStatus status = ConsultationStatus.valueOf(model.getValueAt(row, 4).toString());
                 String id = model.getValueAt(row, 0).toString();
-                int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to cancel?", "Cancellation process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (result == JOptionPane.YES_OPTION) {
-                    if (status.equals(ConsultationStatus.COMPLETED) || status.equals(ConsultationStatus.CANCELLED)) {
-                        JOptionPane.showMessageDialog(null, "This consultation period has has already expired/cancelled", "Error occurred", JOptionPane.ERROR_MESSAGE);
-                    } else {
+               if (!(status.equals(ConsultationStatus.COMPLETED) || status.equals(ConsultationStatus.CANCELLED))) {
+                    int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to cancel?", "Cancellation process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (result == JOptionPane.YES_OPTION) {
                         new ConsultationManagement().updateConsultationInFile(id, ConsultationStatus.CANCELLED);
                         JOptionPane.showMessageDialog(null, "Cancellation has been processed and the student will be notified of this change.", "Cancellation successful", JOptionPane.INFORMATION_MESSAGE);
                         HomepageLecturerGui.body.removeAll();
                         HomepageLecturerGui.body.add(new HomepageViewLecturer());
                         HomepageLecturerGui.body.revalidate();
                     }
+                } else {
+                    JOptionPane.showMessageDialog(null, "This consultation period has has already expired/cancelled", "Error occurred", JOptionPane.ERROR_MESSAGE);
                 }
             }
 
@@ -113,6 +114,10 @@ public class HomepageViewLecturer extends JPanel {
                 if (result == JOptionPane.YES_OPTION) {
                     new ConsultationManagement().updateConsultationInFile(id, studentName, ConsultationStatus.SCHEDULED, null, 0, "", "", true);
                 }
+                if (result == JOptionPane.NO_OPTION) {
+                    new ConsultationManagement().updateConsultationInFile(id, studentName, ConsultationStatus.CANCELLED, null, 0, "", "", true);
+                    System.out.println("Cancelled from Approve Cancel");
+                }
                 HomepageLecturerGui.body.removeAll();
                 HomepageLecturerGui.body.add(new HomepageViewLecturer());
                 HomepageLecturerGui.body.revalidate();
@@ -124,17 +129,16 @@ public class HomepageViewLecturer extends JPanel {
                 String id = model.getValueAt(row, 0).toString();
                 ConsultationStatus status = ConsultationStatus.valueOf(model.getValueAt(row, 4).toString());
                 boolean isLecturerFeedbackBlank = new ConsultationManagement().findConsultationById(id).getLecturerFeedback().isBlank();
-                int result = JOptionPane.showConfirmDialog(null, "Share your experience with us!", "Feedback Process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (result == JOptionPane.YES_OPTION) {
-                    System.out.println(status.equals(ConsultationStatus.COMPLETED) + " " + isLecturerFeedbackBlank + "\n" + new ConsultationManagement().findConsultationById(id).convert() + "\n" + new ConsultationManagement().findConsultationById(id).getStudentFeedback() + new ConsultationManagement().findConsultationById(id).getLecturerFeedback());
-                    if (status.equals(ConsultationStatus.COMPLETED) && isLecturerFeedbackBlank) {
+                if (status.equals(ConsultationStatus.COMPLETED) && isLecturerFeedbackBlank) {
+                    int result = JOptionPane.showConfirmDialog(null, "Share your experience with us!", "Feedback Process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (result == JOptionPane.YES_OPTION) {
                         feedBackMenu feedBackMenu = new feedBackMenu();
                         feedBackMenu.setVisible(true);
                         feedBackMenu.hiddenLabel.setText(id);
-                    } else {
+                    }
+                } else {
                         JOptionPane.showMessageDialog(null, "You have yet to attend this consultation or have already given feedback", "Error occurred", JOptionPane.ERROR_MESSAGE);
                     }
-                }
             }
 
             @Override
@@ -151,13 +155,16 @@ public class HomepageViewLecturer extends JPanel {
                         model.getDataVector().removeAllElements();
                         model.fireTableDataChanged();
                         for (Consultation consultation : filteredList) {
-                            if (!consultation.getStatus().equals(ConsultationStatus.CANCELLED)) {
+                            if (consultation.getStudentId().isBlank()) {
+                                model.addRow(new Object[]{consultation.getConsultationId(), "", consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStatus()});
+                            } else {
                                 String studentName = currentSession.findAccountById(consultation.getStudentId()).getName();
                                 model.addRow(new Object[]{consultation.getConsultationId(), studentName, consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStatus()});
+                                // }
                             }
                         }
                         return;
-                    }
+                    }else{return;}
                 }
                 JOptionPane.showMessageDialog(null, "Consultation period has already expired", "Error occurred", JOptionPane.ERROR_MESSAGE);
                 HomepageLecturerGui.body.removeAll();
@@ -214,7 +221,6 @@ public class HomepageViewLecturer extends JPanel {
 
         HomepageViewLecturerTable.setBackground(new java.awt.Color(255, 255, 255));
         HomepageViewLecturerTable.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        HomepageViewLecturerTable.setForeground(new java.awt.Color(0, 0, 0));
         HomepageViewLecturerTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -238,7 +244,6 @@ public class HomepageViewLecturer extends JPanel {
         HomepageViewLecturerTable.setOpaque(false);
         HomepageViewLecturerTable.setRowHeight(80);
         HomepageViewLecturerTable.setSelectionBackground(new java.awt.Color(233, 233, 233));
-        HomepageViewLecturerTable.setSelectionForeground(new java.awt.Color(0, 0, 0));
         HomepageViewLecturerTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         HomepageViewLecturerTable.setShowGrid(true);
         HomepageViewLecturerTable.setShowVerticalLines(false);
@@ -248,9 +253,9 @@ public class HomepageViewLecturer extends JPanel {
             HomepageViewLecturerTable.getColumnModel().getColumn(0).setMinWidth(100);
             HomepageViewLecturerTable.getColumnModel().getColumn(0).setPreferredWidth(100);
             HomepageViewLecturerTable.getColumnModel().getColumn(0).setMaxWidth(150);
-            HomepageViewLecturerTable.getColumnModel().getColumn(1).setMinWidth(400);
-            HomepageViewLecturerTable.getColumnModel().getColumn(1).setPreferredWidth(400);
-            HomepageViewLecturerTable.getColumnModel().getColumn(1).setMaxWidth(500);
+            HomepageViewLecturerTable.getColumnModel().getColumn(1).setMinWidth(300);
+            HomepageViewLecturerTable.getColumnModel().getColumn(1).setPreferredWidth(300);
+            HomepageViewLecturerTable.getColumnModel().getColumn(1).setMaxWidth(350);
             HomepageViewLecturerTable.getColumnModel().getColumn(2).setMinWidth(150);
             HomepageViewLecturerTable.getColumnModel().getColumn(2).setPreferredWidth(150);
             HomepageViewLecturerTable.getColumnModel().getColumn(2).setMaxWidth(150);
@@ -267,20 +272,23 @@ public class HomepageViewLecturer extends JPanel {
         model.fireTableDataChanged();
         for (Consultation consultation : filteredList) {
             //if (!consultation.getStatus().equals(ConsultationStatus.CANCELLED)) {
-                System.out.println("WOINDER:L " + consultation.getConsultationId()  +consultation.getStudentId() +  currentSession.findAccountById(consultation.getStudentId()));
+                //System.out.println("WOINDER:L " + consultation.getConsultationId()  +consultation.getStudentId() +  currentSession.findAccountById(consultation.getStudentId()));
                 if (consultation.getStudentId().isBlank()) {
                     model.addRow(new Object[]{consultation.getConsultationId(), "", consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStatus()});
-                     } else {
+                } else {
                     String studentName = currentSession.findAccountById(consultation.getStudentId()).getName();
                     model.addRow(new Object[]{consultation.getConsultationId(), studentName, consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStatus()});
-               // }
+                    // }
             }
         }
+
         jLabel1.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(0, 0, 0));
         jLabel1.setText("Filter:");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All", "Open","Scheduled", "Rescheduled", "Completed"}));
+        jComboBox1.setBackground(new java.awt.Color(255, 255, 255));
+        jComboBox1.setForeground(new java.awt.Color(0, 0, 0));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All", "Open","Scheduled", "Rescheduled", "Completed", "Cancelled"}));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox1ActionPerformed(evt);
@@ -335,18 +343,18 @@ public class HomepageViewLecturer extends JPanel {
         model.getDataVector().removeAllElements();
         model.fireTableDataChanged();
         int index = jComboBox1.getSelectedIndex();
-        String[] options = {"ALL", "OPEN", "SCHEDULED", "RESCHEDULED", "COMPLETED"};
+        String[] options = {"ALL", "OPEN", "SCHEDULED", "RESCHEDULED", "COMPLETED", "CANCELLED"};
         if (options[index].equals("ALL")) {
             List<Consultation> filteredList = filter();
             for (Consultation consultation: filteredList) {
-                if (!consultation.getStatus().equals(ConsultationStatus.CANCELLED)) {
+                //if (!consultation.getStatus().equals(ConsultationStatus.CANCELLED)) {
                     if (consultation.getStudentId().isBlank()) {
                         model.addRow(new Object[]{consultation.getConsultationId(), "", consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStatus()});
                     } else {
                         String studentName = currentSession.findAccountById(consultation.getStudentId()).getName();
                         model.addRow(new Object[]{consultation.getConsultationId(), studentName, consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStartDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy, HH:mm")), consultation.getStatus()});
                     }
-                    }
+                    //}
             }
         } else {
             List<Consultation> filteredList = filter();

@@ -88,6 +88,7 @@ public class HomepageView extends javax.swing.JPanel {
             return filteredList;
     }
     public HomepageView() {
+        new ConsultationManagement().checkConsultationHasPassed(); // TALK ABT THIS HERE
         initComponents();
         HomepageViewTable.setDefaultRenderer(Object.class, new TableCellRender());
         TableActionEventHomepageView event = new TableActionEventHomepageView() {
@@ -96,35 +97,35 @@ public class HomepageView extends javax.swing.JPanel {
                 DefaultTableModel model = (DefaultTableModel) HomepageViewTable.getModel();
                 ConsultationStatus status = ConsultationStatus.valueOf(model.getValueAt(row, 4).toString());
                 String id = model.getValueAt(row, 0).toString();
-                int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to cancel?", "Cancellation process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (result == JOptionPane.YES_OPTION) {
-                    if (status.equals(ConsultationStatus.COMPLETED)) {
-                        JOptionPane.showMessageDialog(null, "This consultation period has already expired.", "Error occurred", JOptionPane.ERROR_MESSAGE);
-                    } else {
+                if (!status.equals(ConsultationStatus.COMPLETED)) {
+                    int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to cancel?", "Cancellation process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (result == JOptionPane.YES_OPTION) {
                         new ConsultationManagement().updateConsultationInFile(id, ConsultationStatus.CANCELLED);
                         HomepageGui.body.removeAll();
                         HomepageGui.body.add(new HomepageView());
                         HomepageGui.body.revalidate();
                         }
-                    }
+                    } else {
+                    JOptionPane.showMessageDialog(null, "This consultation period has already expired.", "Error occurred", JOptionPane.ERROR_MESSAGE);
                 }
+            }
             @Override
             public void onClickReschedule(int row) {
                 DefaultTableModel model = (DefaultTableModel) HomepageViewTable.getModel();
                 String id = model.getValueAt(row, 0).toString();
                 String lecturerName = model.getValueAt(row, 1).toString();
                 ConsultationStatus status = ConsultationStatus.valueOf(model.getValueAt(row, 4).toString());
-                int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to reschedule this consultation?!", "Reschedule Process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (result == JOptionPane.YES_OPTION) {
-                    if (status.equals(ConsultationStatus.COMPLETED)) {
-                        JOptionPane.showMessageDialog(null, "This consultation period has already expired.", "Error occurred", JOptionPane.ERROR_MESSAGE);
-                    } else {
+               if (!status.equals(ConsultationStatus.COMPLETED)) {
+                   int result = JOptionPane.showConfirmDialog(null, "Are you sure you want to reschedule this consultation?!", "Reschedule Process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                   if (result == JOptionPane.YES_OPTION) {
                         rescheduleMenu rescheduleMenu = new rescheduleMenu();
                         rescheduleMenu.consultationIdTextField.setText(id);
                         rescheduleMenu.lecturerInChargeTextField.setText(lecturerName);
                         rescheduleMenu.setVisible(true);
                     }
-                }
+                } else {
+                   JOptionPane.showMessageDialog(null, "This consultation period has already expired.", "Error occurred", JOptionPane.ERROR_MESSAGE);
+               }
             }
 
             @Override
@@ -133,16 +134,37 @@ public class HomepageView extends javax.swing.JPanel {
                 String id = model.getValueAt(row, 0).toString();
                 ConsultationStatus status = ConsultationStatus.valueOf(model.getValueAt(row, 4).toString());
                 boolean isStudentFeedbackBlank = new ConsultationManagement().findConsultationById(id).getStudentFeedback().isBlank();
-                int result = JOptionPane.showConfirmDialog(null, "Share your experience with us!", "Feedback Process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (result == JOptionPane.YES_OPTION) {
-                    if (status.equals(ConsultationStatus.COMPLETED) && isStudentFeedbackBlank) {
+                if (status.equals(ConsultationStatus.COMPLETED) && isStudentFeedbackBlank) {
+                    int result = JOptionPane.showConfirmDialog(null, "Share your experience with us!", "Feedback Process", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (result == JOptionPane.YES_OPTION) {
                         feedBackMenu feedBackMenu =  new feedBackMenu();
                         feedBackMenu.setVisible(true);
                         feedBackMenu.hiddenLabel.setText(id);
-                    } else {
-                        JOptionPane.showMessageDialog(null, "You have yet to attend this consultation or have already given feedback", "Error occurred", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "You have yet to attend this consultation or have already given feedback", "Error occurred", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+
+            @Override
+            public void onClickReadFeedback(int row) {
+                DefaultTableModel model = (DefaultTableModel) HomepageViewTable.getModel();
+                String id = model.getValueAt(row, 0).toString();
+                ConsultationStatus status = ConsultationStatus.valueOf(model.getValueAt(row, 4).toString());
+                List<Consultation> filteredList = filter();
+                if (status.equals(ConsultationStatus.COMPLETED)) {
+                    for (Consultation consultation : filteredList) {
+                        if (consultation.getConsultationId().equals(id)) {
+                            viewFeedback viewFeedback = new viewFeedback();
+                            viewFeedback.setVisible(true);
+                            viewFeedback.studentTextArea.setText(consultation.getStudentFeedback());
+                            viewFeedback.lecturerTextArea.setText(consultation.getLecturerFeedback());
+                            return;
+                        }
+
                     }
                 }
+                JOptionPane.showMessageDialog(null, "This consultation period has not started/ended", "Error occurred", JOptionPane.ERROR_MESSAGE);
             }
         };
         HomepageViewTable.getColumnModel().getColumn(5).setCellRenderer(new TableActionCellRender());
@@ -171,7 +193,6 @@ public class HomepageView extends javax.swing.JPanel {
         jScrollPane1.setBackground(new java.awt.Color(0, 51, 204));
 
         HomepageViewTable.setBackground(new java.awt.Color(255, 255, 255));
-        HomepageViewTable.setForeground(new java.awt.Color(0, 0, 0));
         HomepageViewTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -181,7 +202,7 @@ public class HomepageView extends javax.swing.JPanel {
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, true, false, true
+                false, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -195,7 +216,6 @@ public class HomepageView extends javax.swing.JPanel {
         HomepageViewTable.setOpaque(false);
         HomepageViewTable.setRowHeight(40);
         HomepageViewTable.setSelectionBackground(new java.awt.Color(233, 233, 233));
-        HomepageViewTable.setSelectionForeground(new java.awt.Color(0, 0, 0));
         HomepageViewTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         HomepageViewTable.setShowGrid(true);
         HomepageViewTable.setShowVerticalLines(false);
@@ -217,6 +237,7 @@ public class HomepageView extends javax.swing.JPanel {
             HomepageViewTable.getColumnModel().getColumn(4).setMinWidth(150);
             HomepageViewTable.getColumnModel().getColumn(4).setPreferredWidth(150);
             HomepageViewTable.getColumnModel().getColumn(4).setMaxWidth(150);
+            HomepageViewTable.getColumnModel().getColumn(5).setResizable(false);
             HomepageViewTable.getColumnModel().getColumn(5).setPreferredWidth(350);
         }
         List<Consultation> filteredList = filter();
@@ -232,6 +253,8 @@ public class HomepageView extends javax.swing.JPanel {
         jLabel1.setForeground(new java.awt.Color(0, 0, 0));
         jLabel1.setText("Filter:");
 
+        jComboBox1.setBackground(new java.awt.Color(255, 255, 255));
+        jComboBox1.setForeground(new java.awt.Color(0, 0, 0));
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All", "Scheduled", "Rescheduled", "Completed"}));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -241,7 +264,7 @@ public class HomepageView extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(25, 25, 25)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1051, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jLabel1)
@@ -300,6 +323,7 @@ public class HomepageView extends javax.swing.JPanel {
                 }
             }
         }
+        model.fireTableDataChanged();
       }//GEN-LAST:event_submitBtnActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public static javax.swing.JTable HomepageViewTable;

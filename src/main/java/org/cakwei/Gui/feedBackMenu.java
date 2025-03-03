@@ -8,18 +8,13 @@ import org.cakwei.Consultation;
 import org.cakwei.ConsultationManagement;
 import org.cakwei.ConsultationStatus;
 import org.cakwei.userTypes;
-
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-
 import static org.cakwei.Application.currentSession;
-import static org.cakwei.Gui.HomepageView.HomepageViewTable;
 
 public class feedBackMenu extends javax.swing.JFrame {
     public feedBackMenu() {
+        new ConsultationManagement().checkConsultationHasPassed();
         initComponents();
         setTitle("Give your feedback");
     }
@@ -102,6 +97,10 @@ public class feedBackMenu extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         String feedbackMsg = jTextField1.getText();
+        if (feedbackMsg.isBlank()) {
+            JOptionPane.showMessageDialog(null, "Please fill in the field.", "Operation failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         String id = hiddenLabel.getText();
         ConsultationManagement cm = new ConsultationManagement();
         List<Consultation> consultations = cm.readConsultation();

@@ -1,5 +1,4 @@
 package org.cakwei;
-
 public class Account {
     private final String username, password, id;
     private final userTypes userType;

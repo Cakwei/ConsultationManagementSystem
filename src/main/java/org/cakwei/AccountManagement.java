@@ -5,23 +5,16 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-
-import static org.cakwei.Application.currentSession;
-import static org.cakwei.Main.getInput;
-
 public class AccountManagement extends FileManagement {
     public String currentUserId;
     public boolean logIn(String username, String password) {
         if (!(isUsernameExists(username))) {
-                //System.out.println("[!] Username does not exists.");
                 return false;
             }
             if (!isPasswordMatchUser(username, password)) {
-                //System.out.println("[!] Password entered is incorrect.");
                 return false;
             }
         currentUserId = findAccountByName(username).getId();
-        //System.out.println("[!] Successfully logged in!");
         return true;
     }
 
@@ -48,18 +41,8 @@ public class AccountManagement extends FileManagement {
 
     }
 
-    private boolean isValidPassword(String password) {
+    public boolean isValidPassword(String password) {
         return password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).*$");
-    }
-
-    public String displayRequirements() {
-        return """
-               \n[REGISTER] Input must meet the following requirements:
-                No duplicate usernames
-                No spaces allowed
-                Minimum 1 number
-                Minimum one upper AND lower case character
-               """;
     }
 
     protected void registerUser(String id, String username, String password, userTypes userRole) {
@@ -97,28 +80,11 @@ public class AccountManagement extends FileManagement {
             System.out.println("[!] Attempting to create " + "users.txt " + "file...");
             System.out.println("[!] " + "users.txt " + "successfully created.");
             writer.write("ID::USERNAME::PASSWORD::USERTYPE" + "\n");
-            writer.write("1::admin::admin::LECTURER" + "\n");
+            writer.write("1::lec1::l::LECTURER" + "\n");
+            writer.write("2::cakwei::c::STUDENT" + "\n");
             writer.flush();
             writer.close();
             readUserFile();
-        } catch (IOException e) {
-            System.out.println("[!] An error occurred.");
-        }
-    }
-    protected void rewriteFile(List<Account> accounts) { //Ran on deletion of a user
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(userFile));
-            System.out.println("[!] Attempting to rewrite " + "users.txt " + "file...");
-            writer.write("ID::USERNAME::PASSWORD::USERTYPE" + "\n");
-            System.out.println("IMPORTED: " + accounts);
-            for (Account acc : accounts) {
-                writer.write((String.format("%s::%s::%s::%s", accounts.indexOf(acc) + 1, acc.getName(), acc.getPassword(), acc.getUserType())));
-                writer.newLine();
-            }
-
-            writer.flush();
-            writer.close();
-            System.out.println("[!] users.txt successfully created.");
         } catch (IOException e) {
             System.out.println("[!] An error occurred.");
         }
@@ -174,7 +140,6 @@ public class AccountManagement extends FileManagement {
     public List<Account> readUserFile() {
         List<Account> accounts = new ArrayList<>();
         try {
-            //userNameList.clear(); userPasswordList.clear(); userTypeList.clear();
             BufferedReader reader = new BufferedReader(new FileReader(userFile));
             String[] lines;
             reader.readLine();
